@@ -1,0 +1,315 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Report Card</title>
+    <style>
+        @font-face {
+            font-family: 'JameelNooriNastaleeq';
+            src: url("{% static 'results/fonts/JameelNooriNastaleeq.ttf' %}") format('truetype');
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+        }
+        .container {
+            width: 794px; /* A4 width at 96 DPI */
+            height: 1123px; /* A4 height at 96 DPI */
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            text-align: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .header img {
+            max-width: 100%;
+        }
+        .name-logo {
+            width: 280px;
+            margin-bottom: 10px;
+        }
+        .round-logo {
+            width: 100px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        .subheading {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .section {
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .section h2 {
+            background-color: #3498db;
+            color: white;
+            padding: 8px;
+            margin: 0;
+            font-size: 16px;
+        }
+        .middle-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("{% static 'results/images/Idara logo.jpg' %}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 60%;
+            opacity: 0.15;
+            z-index: 0;
+        }
+        .middle-section table {
+            position: relative;
+            z-index: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .middle-section th {
+            background-color: transparent;
+            color: #2c3e50;
+        }
+        td {
+            color: #0e0e0e;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #f4eeed;
+            background-color: #24be3e;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .note {
+            font-family: 'JameelNooriNastaleeq', sans-serif;
+            text-align: center;
+            color: #f01e06;
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 8px;
+            border: 1px dashed #e74c3c;
+            border-radius: 5px;
+            line-height: 1.4;
+        }
+        .signature-section {
+            text-align: left;
+            margin-top: 15px;
+            padding: 15px 0;
+            direction: rtl;
+        }
+        .signature-section p {
+            margin: 0;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        .stamp-img {
+            width: 80px;
+            height: 80px;
+            margin-right: 15px;
+            vertical-align: top;
+        }
+        .signature-img {
+            width: 150px;
+            height: 50px;
+            margin-top: 10px;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+                border-radius: 0;
+                border: 1px solid #000;
+            }
+            .round-logo {
+                width: 25mm;
+            }
+            .name-logo {
+                width: 70mm;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .subheading {
+                font-size: 12px;
+            }
+            .section {
+                border: 1px solid #000;
+                border-radius: 0;
+            }
+            .section h2 {
+                font-size: 14px;
+                background-color: #3498db;
+            }
+            .middle-section::before {
+        display: block !important; /* Ensure watermark prints */
+        opacity: 0.15; /* Keep it faint */
+        background-size: 60%;
+            }
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                border-bottom: 1px solid #000;
+            }
+            .highlight {
+                padding: 2px 4px;
+            }
+            .note {
+                font-size: 12px;
+                border: 1px dashed #000;
+            }
+            .signature-section p {
+                font-size: 12px;
+            }
+            .stamp-img {
+                width: 20mm;
+                height: 20mm;
+            }
+            .signature-img {
+                width: 40mm;
+                height: 15mm;
+            }
+            @page {
+                margin: 0;
+            }
+            * {
+                -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{% static 'results/images/Idara logo.jpg' %}" class="round-logo" alt="Idara Logo">
+        <div class="header">
+            <img src="{% static 'results/images/Idara NAme logo.jpg' %}" class="name-logo" alt="Idara Name Logo">
+        </div>
+
+        {% if message %}
+            <p class="error">{{ message }}</p>
+            <a href="{% url 'search_excel' %}" class="back-link">واپس تلاش کریں</a>
+        {% else %}
+            <h1>ادارہ اشرف العلوم ٹرسٹ سالانہ نتائج 2025</h1>
+            <p class="subheading">کلاس: <span class="highlight">{{ class_name }}</span> | داخلہ نمبر: <span class="highlight">{{ search_value }}</span></p>
+
+            <!-- Top Section: Student Details -->
+            <div class="section">
+                <h2>طالب علم کی تفصیلات</h2>
+                <table>
+                    {% for key, value in top_section_data.items %}
+                        <tr>
+                            <th>{{ key }}</th>
+                            <td class="{% if key in 'داخلہ نمبر, نام طالب علم' %}highlight{% endif %}">{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <!-- Middle Section: Subject Marks -->
+            {% if middle_section_data %}
+            <div class="section middle-section">
+                <h2>مضامین کے نمبرات</h2>
+                <table>
+                    {% for key, value in middle_section_data.items %}
+                        <tr>
+                            <th>{{ key }}</th>
+                            <td><strong>{{ value }}</strong></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Bottom Section: Results Summary -->
+            <div class="section">
+                <h2>نتائج کا خلاصہ</h2>
+                <table>
+                    {% for key, value in bottom_section_data.items %}
+                        <tr>
+                            <th>{{ key }}</th>
+                            <td class="{% if key in 'ہ, درجہ (Rank)' %}highlight{% endif %}">{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <!-- Signature and Stamp Section -->
+            <div class="signature-section">
+                <p>ناظم تعلیمات کے دستخط و مہر</p>
+                <img src="{% static 'results/images/Talimat Stamp.jpg' %}" class="stamp-img" alt="Talimat Stamp">
+                <img src="{% static 'results/images/Nazim E Talimat esign.jpg' %}" class="signature-img" alt="Nazim E Talimat Signature">
+            </div>
+            
+            <p class="note">نوٹ: آئندہ سال رجوع ہونا چاہتے ہیں تو نتیجہ ساتھ لانا ضروری ہوگا، لباس صرف سفید اور کلی دار کرتا و شلوار نما پائجامہ قابل قبول ہوگا اور موبائل فون ساتھ رکھنے کی بالکل اجازت نہیں رہے گی۔</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+
