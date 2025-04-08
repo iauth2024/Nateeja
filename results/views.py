@@ -4,10 +4,8 @@ from django.shortcuts import render
 from django.conf import settings
 import logging
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
-# Cache Excel data at startup
 EXCEL_FILE_PATH = os.path.join(settings.BASE_DIR, 'results', 'Nateeja.xlsx')
 EXCEL_DATA = None
 
@@ -19,19 +17,18 @@ def load_excel_data():
             raise FileNotFoundError("Excel file not found at the specified path.")
         excel_file = pd.ExcelFile(EXCEL_FILE_PATH)
         EXCEL_DATA = {sheet: pd.read_excel(EXCEL_FILE_PATH, sheet_name=sheet) for sheet in excel_file.sheet_names}
-        logger.info("Excel data loaded successfully with %d sheets", len(EXCEL_DATA))
+        for sheet_name, df in EXCEL_DATA.items():
+            logger.info("Sheet %s loaded with columns: %s", sheet_name, df.columns.tolist())
     except Exception as e:
         logger.exception("Failed to load Excel data: %s", str(e))
         raise
 
-# Load data on startup (call this in your app’s ready() method or similar)
 if EXCEL_DATA is None:
     load_excel_data()
 
 def search_excel(request):
     if request.method == 'POST':
         try:
-            # Get search value and convert to integer
             search_value_raw = request.POST.get('search_value', '').strip()
             if not search_value_raw:
                 raise ValueError("Please enter an admission number.")
@@ -41,46 +38,66 @@ def search_excel(request):
             if EXCEL_DATA is None:
                 raise FileNotFoundError("Excel data not loaded.")
 
-            # Iterate through cached sheets
             for sheet_name, df in EXCEL_DATA.items():
-                # Clean DataFrame
-                df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
-                rename_dict = {col: "درجہ (Rank)" for col in df.columns if "درجہ" in col and "1" in col}
-                df.rename(columns=rename_dict, inplace=True)
+                # Work with a copy to avoid SettingWithCopyWarning
+                df = df.copy()
 
-                # Search for student
+                # Clean DataFrame: Remove "Unnamed" columns
+                if not df.empty and df.columns.size > 0:
+                    df = df.loc[:, ~df.columns.astype(str).str.contains("^Unnamed", na=False)]
+                else:
+                    logger.warning("Sheet %s is empty or has no valid columns", sheet_name)
+                    continue
+
+                # Normalize column names (remove extra spaces)
+                df.columns = df.columns.str.strip()
+
+                # Log columns for debugging
+                logger.debug("Sheet %s - Columns after cleaning: %s", sheet_name, df.columns.tolist())
+
+                # Handle rank column renaming
+                rank_column = None
+                if "درجہ.1" in df.columns:
+                    rank_column = "درجہ.1"
+                elif "درجہ" in df.columns and df.columns.tolist().count("درجہ") > 1:
+                    rank_column = df.columns[df.columns.tolist().index("درجہ", df.columns.tolist().index("درجہ") + 1)]
+                if rank_column:
+                    df.rename(columns={rank_column: "درجہ (Rank)"}, inplace=True)
+
                 if 'داخلہ نمبر' in df.columns:
+                    df['داخلہ نمبر'] = pd.to_numeric(df['داخلہ نمبر'], errors='coerce')
                     result = df[df['داخلہ نمبر'] == search_value]
+                    
                     if not result.empty:
                         result_dict = result.iloc[0].to_dict()
 
-                        # Remove unwanted averages
+                        # Remove unwanted keys
                         result_dict.pop("جائزہ اوسط", None)
                         result_dict.pop("اوسط نمبر", None)
                         result_dict.pop("اوسط نمبر.1", None)
 
-                        # Format numerical values
+                        # Format numeric values
                         for key, value in result_dict.items():
-                            if isinstance(value, (int, float)) and key not in ["داخلہ نمبر", "رول نمبر"]:
-                                if key == "کل اوسط":
+                            if isinstance(value, (int, float)) and key not in ["داخلہ نمبر", "ہال ٹکٹ نمبر"]:
+                                if key == "کل اوسط" and pd.notna(value):
                                     result_dict[key] = "{:.2f}".format(value)
                                 elif pd.notna(value):
                                     result_dict[key] = int(value)
 
-                        # Handle "درجہ.1" renaming
-                        if "درجہ.1" in result_dict:
-                            result_dict["درجہ (Rank)"] = result_dict.pop("درجہ.1")
-
-                        # Define sections
+                        # Define sections explicitly
                         top_section_keys = ["ہال ٹکٹ نمبر", "داخلہ نمبر", "شعبہ", "درجہ", "نمبر شمار", "نام طالب علم"]
-                        bottom_section_keys = ["کل نمبرات", "فیصد", "درجۂ کامیابی", "پوزیشن", "امتیازی پوزیشن", "درجہ (Rank)", "کل اوسط"]
+                        bottom_section_keys = ["کل نمبر", "کل اوسط", "درجہ (Rank)", "نتیجہ"]
                         visible_columns = top_section_keys + bottom_section_keys
 
+                        logger.debug("Sheet %s - Visible columns: %s", sheet_name, visible_columns)
                         columns = df.columns.tolist()
+
                         top_section_data = {key: result_dict.get(key, 'N/A') for key in top_section_keys if key in columns}
                         bottom_section_data = {key: result_dict.get(key, 'N/A') for key in bottom_section_keys if key in columns}
-                        middle_section_data = {key: value for key, value in result_dict.items() 
-                                             if key not in visible_columns and key in columns and pd.notna(value)}
+                        middle_section_data = {
+                            key: value for key, value in result_dict.items()
+                            if key not in visible_columns and key in columns and pd.notna(value)
+                        }
 
                         context = {
                             'top_section_data': top_section_data,
@@ -90,6 +107,9 @@ def search_excel(request):
                             'search_value': search_value
                         }
                         return render(request, 'search_results.html', context)
+                else:
+                    logger.warning("Sheet %s does not contain 'داخلہ نمبر' column. Available columns: %s", 
+                                 sheet_name, df.columns.tolist())
 
             message = f"کوئی طالب علم داخلہ نمبر '{search_value}' کے ساتھ کسی شیٹ میں نہیں ملا۔"
 
