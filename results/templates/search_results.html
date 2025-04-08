@@ -9,6 +9,8 @@
         @font-face {
             font-family: 'JameelNooriNastaleeq';
             src: url("{% static 'results/fonts/JameelNooriNastaleeq.ttf' %}") format('truetype');
+            font-weight: normal;
+            font-style: normal;
         }
         body {
             font-family: Arial, sans-serif;
@@ -20,14 +22,15 @@
         .container {
             width: 794px; /* A4 width at 96 DPI */
             height: 1123px; /* A4 height at 96 DPI */
-            margin: 0 auto;
+            margin: 20px auto;
             background-color: white;
             padding: 20px;
             box-sizing: border-box;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: relative;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
         .header {
             text-align: center;
@@ -47,13 +50,11 @@
             left: 10px;
         }
         h1 {
-            text-align: center;
             color: #2c3e50;
-            margin-bottom: 10px;
             font-size: 22px;
+            margin: 10px 0;
         }
         .subheading {
-            text-align: center;
             color: #7f8c8d;
             font-size: 14px;
             margin-bottom: 15px;
@@ -63,7 +64,6 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             overflow: hidden;
-            position: relative;
         }
         .section h2 {
             background-color: #3498db;
@@ -114,7 +114,7 @@
         }
         .highlight {
             font-weight: bold;
-            color: #f4eeed;
+            color: #fff;
             background-color: #24be3e;
             padding: 2px 4px;
             border-radius: 3px;
@@ -132,13 +132,14 @@
         }
         .error {
             color: #e74c3c;
-            text-align: center;
-            margin: 15px 0;
-            font-size: 14px;
+            font-size: 16px;
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #e74c3c;
+            border-radius: 5px;
         }
         .note {
             font-family: 'JameelNooriNastaleeq', sans-serif;
-            text-align: center;
             color: #f01e06;
             font-size: 14px;
             margin-top: 15px;
@@ -146,6 +147,7 @@
             border: 1px dashed #e74c3c;
             border-radius: 5px;
             line-height: 1.4;
+            text-align: center;
         }
         .signature-section {
             text-align: left;
@@ -183,8 +185,8 @@
                 margin: 0;
                 padding: 10mm;
                 box-shadow: none;
-                border-radius: 0;
                 border: 1px solid #000;
+                border-radius: 0;
             }
             .round-logo {
                 width: 25mm;
@@ -204,12 +206,10 @@
             }
             .section h2 {
                 font-size: 14px;
-                background-color: #3498db;
             }
             .middle-section::before {
-        display: block !important; /* Ensure watermark prints */
-        opacity: 0.15; /* Keep it faint */
-        background-size: 60%;
+                background-size: 60%;
+                opacity: 0.15;
             }
             table {
                 font-size: 12px;
@@ -236,11 +236,12 @@
                 height: 15mm;
             }
             @page {
+                size: A4;
                 margin: 0;
             }
             * {
                 -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
@@ -266,7 +267,7 @@
                     {% for key, value in top_section_data.items %}
                         <tr>
                             <th>{{ key }}</th>
-                            <td class="{% if key in 'داخلہ نمبر, نام طالب علم' %}highlight{% endif %}">{{ value }}</td>
+                            <td class="{% if key == 'داخلہ نمبر' or key == 'نام طالب علم' %}highlight{% endif %}">{{ value }}</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -294,7 +295,7 @@
                     {% for key, value in bottom_section_data.items %}
                         <tr>
                             <th>{{ key }}</th>
-                            <td class="{% if key in 'ہ, درجہ (Rank)' %}highlight{% endif %}">{{ value }}</td>
+                            <td class="{% if key == 'نتیجہ' or key == 'درجہ (Rank)' %}highlight{% endif %}">{{ value }}</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -306,10 +307,9 @@
                 <img src="{% static 'results/images/Talimat Stamp.jpg' %}" class="stamp-img" alt="Talimat Stamp">
                 <img src="{% static 'results/images/Nazim E Talimat esign.jpg' %}" class="signature-img" alt="Nazim E Talimat Signature">
             </div>
-            
+
             <p class="note">نوٹ: آئندہ سال رجوع ہونا چاہتے ہیں تو نتیجہ ساتھ لانا ضروری ہوگا، لباس صرف سفید اور کلی دار کرتا و شلوار نما پائجامہ قابل قبول ہوگا اور موبائل فون ساتھ رکھنے کی بالکل اجازت نہیں رہے گی۔</p>
         {% endif %}
     </div>
 </body>
 </html>
-
